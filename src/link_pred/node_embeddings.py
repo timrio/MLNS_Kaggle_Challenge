@@ -16,7 +16,7 @@ def compute_walklets(G):
     return(walklets_articles_embeddings)
 
 def compute_node2vec(G):
-    walklets = Node2Vec() # we leave the defaults parameters for the other values
+    walklets = Node2Vec(walk_number = 10, walk_length = 15)
     walklets.fit(G)
     walklets_articles_embeddings = walklets.get_embedding()
     return(walklets_articles_embeddings)
@@ -38,8 +38,8 @@ def compute_abstracts_embeddings(information_df):
     else:
         device = 'gpu'
 
-    if os.path.isfile('Data/processed_data/abstracts_embeddings.pkl'):
-        abstracts_embeddings = pickle.load(open('Data/processed_data/abstracts_embeddings.pkl','rb'))
+    if os.path.isfile('Data/embeddings/abstracts_embeddings.pkl'):
+        abstracts_embeddings = pickle.load(open('Data/embeddings/abstracts_embeddings.pkl','rb'))
     else:
         
         # load model and tokenizer
@@ -62,6 +62,6 @@ def compute_abstracts_embeddings(information_df):
             # take the first token in the batch as the embedding
             embedding = result.last_hidden_state[:, 0, :].detach().cpu().numpy()
             abstracts_embeddings.append(embedding)
-        pickle.dump(abstracts_embeddings, open('Data/processed_data/abstracts_embeddings.pkl','wb'))
+        pickle.dump(abstracts_embeddings, open('Data/embeddings/abstracts_embeddings.pkl','wb'))
     return(abstracts_embeddings)
    
