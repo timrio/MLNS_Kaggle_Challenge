@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from sklearn.metrics import f1_score, accuracy_score, roc_curve
 from xgboost import XGBClassifier
+import numpy as np
 
 def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
 
