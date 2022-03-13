@@ -64,4 +64,34 @@ def compute_abstracts_embeddings(information_df):
             abstracts_embeddings.append(embedding)
         pickle.dump(abstracts_embeddings, open('Data/embeddings/abstracts_embeddings.pkl','wb'))
     return(abstracts_embeddings)
+
+
+
+def compute_titles_embeddings(information_df):
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = 'gpu'
+
+    if os.path.isfile('Data/embeddings/titles_embeddings.pkl'):
+        titles_embeddings = pickle.load(open('Data/embeddings/titles_embeddings.pkl','rb'))
+    else:
+        
+        # load model and tokenizer
+        tokenizer = AutoTokenizer.from_pretrained('allenai/specter')
+        model = AutoModel.from_pretrained('allenai/specter').to(device)
+        model.eval()
+        titles_embeddings = []
+        for i in tqdm(range(information_df.shape[0]), position = 0):
+            article = information_df.loc[i]
+            title = article.title
+            # preprocess the input
+            inputs = tokenizer(title, padding=True, truncation=True, return_tensors="pt", max_length=512)
+            inputs = inputs.to(device)
+            result = model(**inputs)
+            # take the first token in the batch as the embedding
+            embedding = result.last_hidden_state[:, 0, :].detach().cpu().numpy()
+            titles_embeddings.append(embedding)
+        pickle.dump(titles_embeddings, open('Data/embeddings/titles_embeddings.pkl','wb'))
+    return(titles_embeddings)
    

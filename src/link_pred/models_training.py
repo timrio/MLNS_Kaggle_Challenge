@@ -51,7 +51,7 @@ def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, 
 
 
 
-def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels, gpu = False, verbose = 0):
+def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
 
     activation_list = ["logistic", "tanh", "relu"]
     learning_rate_list = ["constant","adaptive"]
