@@ -28,14 +28,6 @@ def preferential_attachement(graph, edge):
     return pa
 
 
-def are_connected(graph,edge):
-    try:
-        connect = nx.shortest_path(graph, source=edge[0], target=edge[1])
-        connected  = 1
-    except:
-        connected = 0
-    return(connected)
-
 def common_journal(information_df, node1, node2):
     journal1 = str(information_df[information_df.new_ID==node1].journal_name.values[0])
     journal2 = str(information_df[information_df.new_ID==node2].journal_name.values[0])

@@ -55,7 +55,7 @@ def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, 
 
     activation_list = ["logistic", "tanh", "relu"]
     learning_rate_list = ["constant","adaptive"]
-    solver_list = ["lbfgs",'sgd','adam']
+    solver_list = ['sgd','adam']
     best = 0.0
     best_model = None
     print(f"{'activation':^7} | {'learning_rate':^7} | {'solver':^7} | {'Thresh':^12} | {'F1':^9} ")
