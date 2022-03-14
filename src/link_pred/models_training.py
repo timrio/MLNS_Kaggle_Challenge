@@ -26,7 +26,7 @@ def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, 
         for lr in learning_rates:
             for min_child_weight in min_child_weights:
                 clf = XGBClassifier(max_depth=max_depth, learning_rate=lr, min_child_weight=min_child_weight, n_estimators=n_estim, n_jobs=-1, tree_method='gpu_hist', predictor="gpu_predictor", random_state=42, seed=42)
-                clf.fit(train_samples_scaled, train_labels, eval_metric="auc", early_stopping_rounds=10, eval_set=[(validation_samples_scaled, validation_labels)], verbose=0)
+                clf.fit(train_samples_scaled, train_labels, eval_metric="auc", early_stopping_rounds=100, eval_set=[(validation_samples_scaled, validation_labels)], verbose=0)
                 y_pred = clf.predict_proba(validation_samples_scaled)
                 probas = np.array(y_pred)[:,1]
                 fpr, tpr, thresh_list = roc_curve(validation_labels, probas)
