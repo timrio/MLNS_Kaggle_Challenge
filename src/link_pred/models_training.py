@@ -13,10 +13,10 @@ from sklearn.neural_network import MLPClassifier
 
 def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
 
-    n_estim = 2000
-    max_depth_candidates = [10, 15, 20]
-    learning_rates = [0.1, 0.05, 0.01]
-    min_child_weights = [1, 3, 4, 5]
+    n_estim = 1000
+    max_depth_candidates = [10] #[6, 10, 15]
+    learning_rates = [0.05] #[0.1, 0.05, 0.01]
+    min_child_weights = [1] #[1, 3, 5]
     best = 0.0
     best_model = None
     best_thresh = None
@@ -53,9 +53,9 @@ def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, 
 
 def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
 
-    activation_list = ["logistic", "tanh", "relu"]
-    learning_rate_list = ["constant","adaptive"]
-    solver_list = ['sgd','adam']
+    activation_list = ["relu"] #["logistic", "tanh", "relu"]
+    learning_rate_list = ["adaptive"]
+    solver_list = ['sgd']
     best = 0.0
     best_model = None
     print(f"{'activation':^7} | {'learning_rate':^7} | {'solver':^7} | {'Thresh':^12} | {'F1':^9} ")
@@ -80,12 +80,13 @@ def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, 
                 if best_f1 >= best:
                     best_params = (activation, learning_rate, solver, best_thresh)
                     best_model = clf 
+                    best =  best_f1
 
                 print(f"{best_params[0]:^7} | {best_params[1]:^7} | {best_params[2]:^7} | {best_params[3]:^12} | {best_f1:^9} ")
 
     print("best params:")
     print(f"{best_params[0]:^7} | {best_params[1]:^7} | {best_params[2]:^7} | {best_params[3]:^12} | {best:^9} ")
-    return(best_model, best_params)
+    return(best_model, best_params[3])
 
 
 
@@ -214,4 +215,4 @@ def get_neural_net(train_samples_scaled, train_labels, validation_samples_scaled
 
 
 
-#### MLP with sklearn
+
