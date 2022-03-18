@@ -9,14 +9,15 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import torchmetrics
 from sklearn.neural_network import MLPClassifier
+from catboost import CatBoostClassifier
 
 
 def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
 
-    n_estim = 2000
-    max_depth_candidates = [10, 15, 20]
-    learning_rates = [0.1, 0.05, 0.01]
-    min_child_weights = [1, 3, 4, 5]
+    n_estim = 200
+    max_depth_candidates = [6, 10, 15]
+    learning_rates = [0.1, 0.05]
+    min_child_weights = [1, 3, 5]
     best = 0.0
     best_model = None
     best_thresh = None
@@ -53,9 +54,9 @@ def get_best_xgb(train_samples_scaled, train_labels, validation_samples_scaled, 
 
 def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
 
-    activation_list = ["logistic", "tanh", "relu"]
-    learning_rate_list = ["constant","adaptive"]
-    solver_list = ['sgd','adam']
+    activation_list = ["relu"] #["logistic", "tanh", "relu"]
+    learning_rate_list = ["adaptive"]
+    solver_list = ['sgd']
     best = 0.0
     best_model = None
     print(f"{'activation':^7} | {'learning_rate':^7} | {'solver':^7} | {'Thresh':^12} | {'F1':^9} ")
@@ -80,17 +81,18 @@ def get_best_MLP(train_samples_scaled, train_labels, validation_samples_scaled, 
                 if best_f1 >= best:
                     best_params = (activation, learning_rate, solver, best_thresh)
                     best_model = clf 
+                    best =  best_f1
 
                 print(f"{best_params[0]:^7} | {best_params[1]:^7} | {best_params[2]:^7} | {best_params[3]:^12} | {best_f1:^9} ")
 
     print("best params:")
     print(f"{best_params[0]:^7} | {best_params[1]:^7} | {best_params[2]:^7} | {best_params[3]:^12} | {best:^9} ")
-    return(best_model, best_params)
+    return(best_model, best_params[3])
 
 
 
 def get_xgb(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels, gpu = False, verbose = 0):
-    n_estim = 2000
+    n_estim = 500
     if gpu:
         tree_method = 'gpu_hist'
         predictor="gpu_predictor"
@@ -123,6 +125,42 @@ def get_xgb(train_samples_scaled, train_labels, validation_samples_scaled, valid
     
     return(clf, best_thresh)
 
+
+def get_best_catboost(train_samples_scaled, train_labels, validation_samples_scaled, validation_labels):
+    depth_list = [3,5,7,10]
+    l2_leaf_reg_list = [1, 3, 5, 7, 9]
+    learning_rate_list =  [0.03, 0.1]
+    best = 0.0
+    best_model = None
+    print(f"{'depth':^7} | {'L2':^7} | {'learning_rate':^7} | {'Thresh':^12} | {'F1':^9} ")
+    for depth in depth_list:
+        for learning_rate in learning_rate_list:
+            for l2 in l2_leaf_reg_list:
+                clf = CatBoostClassifier(iterations=10, task_type="GPU", l2_leaf_reg = l2, learning_rate = learning_rate, custom_metric=['F1'], depth = depth, eval_metric= 'F1')
+                clf.fit(train_samples_scaled, train_labels)
+                y_pred = clf.predict_proba(validation_samples_scaled)
+                probas = np.array(y_pred)[:,1]
+                fpr, tpr, thresh_list = roc_curve(validation_labels, probas)
+
+                # obtain best thresh
+                best_thresh = 0.5
+                best_f1 = -np.inf
+                for thresh in thresh_list:
+                    f1 = f1_score(validation_labels, np.int32(probas>thresh))
+                    if f1 >= best_f1:
+                        best_f1 = f1
+                        best_thresh = thresh
+
+                if best_f1 >= best:
+                    best_params = (depth, l2, learning_rate, best_thresh)
+                    best_model = clf 
+                    best =  best_f1
+
+                print(f"{best_params[0]:^7} | {best_params[1]:^7} | {best_params[2]:^7} | {best_params[3]:^12} | {best_f1:^9} ")
+
+    print("best params:")
+    print(f"{best_params[0]:^7} | {best_params[1]:^7} | {best_params[2]:^7} | {best_params[3]:^12} | {best:^9} ")
+    return(best_model, best_params[3])
 
 
 
@@ -214,4 +252,4 @@ def get_neural_net(train_samples_scaled, train_labels, validation_samples_scaled
 
 
 
-#### MLP with sklearn
+
